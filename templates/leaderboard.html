@@ -57,7 +57,7 @@
     /* PENALTY BOX */
     #penaltyBox {
       position: fixed;
-      top: 120px;
+      top: 150px;
       left: 50%;
       transform: translateX(-50%);
       background: rgba(0, 0, 0, 0.7);
@@ -363,7 +363,7 @@
   });
 
   socket.on('formation_lap', () => {
-    updateBanner("🏎️", "Formation Lap in Progress", true);
+    updateBanner("🏎️", "Formation Lap in Progress", false);
   });
 
   socket.on('flag_update', (data) => {
@@ -373,7 +373,7 @@
     else if (type === 'safety')
       updateBanner("🚗", "Safety Car Deployed");
     else if (type === 'safety_end')
-      updateBanner("🟢", `SAFETY CAR IN THIS LAP<br><span style="font-size:12px;">MAINTAIN SPEED</span>`, true);
+      updateBanner("🟢", `SAFETY CAR IN THIS LAP<br><span style="font-size:12px;">MAINTAIN SPEED</span>`, false);
     else if (type === 'red')
       updateBanner("🔴", "Red Flag");
     else if (type === 'green')
@@ -382,7 +382,9 @@
 
   socket.on('penalty_update', (data) => {
     const box = document.getElementById('penaltyBox');
-    box.innerHTML = `<b>Penalty</b><br>#${data.driver} ${data.penalty}<br>Reason: ${data.reason}`;
+    box.innerHTML = `
+  <img src="static/tes.png" alt="Icon" style="float:left; margin-right:8px; width:30px; height:30px;">
+  <b>SAMC STEWARDS</b>: ${data.penalty} FOR #${data.driver} - ${data.reason}`;
     box.classList.remove('hidden');
     setTimeout(() => box.classList.add('hidden'), 5000);
   });
