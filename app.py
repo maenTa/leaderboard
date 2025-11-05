@@ -66,4 +66,4 @@ def handle_penalty(data):
     emit('penalty_update', data, broadcast=True)
 
 if __name__ == '__main__':
-    socketio.run(app, debug=True, port=5002)
+    socketio.run(app, debug=True, port=5002, allow_unsafe_werkzeug=True)
