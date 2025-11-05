@@ -321,17 +321,17 @@
         <div class="rpm-lights" id="rpmLights"></div>
         <div class="rpm-label">RPM</div>
         <div class="speed-label">SPEED</div>
-        <div class="fuel"><img id="fuelIcon" src="fuel_full.png" alt="Fuel Icon" width="18"></div>
+        <div class="fuel"><img id="fuelIcon" src="/static/fuel_full.png" alt="Fuel Icon" width="18"></div>
         <div class="fuel-value" id="fuelValue">0%</div>
-        <div class="engine"><img id="engineIcon" src="/engine_off.png" alt="Engine Icon" width="20"></div>
+        <div class="engine"><img id="engineIcon" src="/static/engine_off.png" alt="Engine Icon" width="20"></div>
         <div class="health-value" id="healthValue">0%</div>
-        <div class="lamp"><img id="lightsIcon" src="/lights_off.png" alt="Headlights Icon" width="20"></div>
-        <div class="seat"><img id="seatbeltIcon" src="/seatbelt_off.png" alt="Seatbelt Icon" width="18"></div>
+        <div class="lamp"><img id="lightsIcon" src="/static/lights_off.png" alt="Headlights Icon" width="20"></div>
+        <div class="seat"><img id="seatbeltIcon" src="/static/seatbelt_off.png" alt="Seatbelt Icon" width="18"></div>
         <div class="indicator-left">
-        <img id="leftIndicator" src="\turn_left_off.png" alt="Left Indicator" width="18">
+        <img id="leftIndicator" src="/static/turn_left_off.png" alt="Left Indicator" width="18">
         </div>
         <div class="indicator-right">
-        <img id="rightIndicator" src="\turn_right_off.png" alt="Right Indicator" width="18">
+        <img id="rightIndicator" src="/static/turn_right_off.png" alt="Right Indicator" width="18">
         </div>
 
 
@@ -481,7 +481,7 @@
     }
     function setSeatbelts(state) {
       const icon = document.getElementById('seatbeltIcon');
-      icon.src = state ? "seatbelt_on.png" : "seatbelt_off.png";
+      icon.src = state ? "/static/seatbelt_on.png" : "/static/seatbelt_off.png";
     }
 
     let currentFuel = 0; // nilai 0.0–1.0
@@ -496,13 +496,13 @@
 
       // Ganti tampilan berdasarkan level bahan bakar
       if (fuel <= 0) {
-        fuelIcon.src = "fuel_empty.png"; // kosong / mati
+        fuelIcon.src = "/static/fuel_empty.png"; // kosong / mati
         fuelText.style.color = "#888";   // abu-abu
       } else if (fuel < 0.2) {
-        fuelIcon.src = "fuel_low.png";   // low fuel merah
+        fuelIcon.src = "/static/fuel_low.png";   // low fuel merah
         fuelText.style.color = "#f33";   // merah
       } else {
-        fuelIcon.src = "fuel_full.png";  // normal hijau
+        fuelIcon.src = "/static/fuel_full.png";  // normal hijau
         fuelText.style.color = "#0f0";   // hijau
       }
     }
@@ -527,13 +527,13 @@
       const healthText = document.getElementById('healthValue');
 
       if (!engineOn) {
-        icon.src = "engine_off.png";        // 🔴 mesin mati
+        icon.src = "/static/engine_off.png";        // 🔴 mesin mati
         healthText.style.color = "#aaa";    // warna netral
       } else if (currentHealth < 0.5) {
-        icon.src = "engine_damaged.png";    // ⚠️ rusak
+        icon.src = "/static/engine_damaged.png";    // ⚠️ rusak
         healthText.style.color = "#f90";    // oranye / peringatan
       } else {
-        icon.src = "engine_on.png";         // 🟢 normal
+        icon.src = "/static/engine_on.png";         // 🟢 normal
         healthText.style.color = "#0f0";    // hijau
       }
     }
@@ -542,13 +542,13 @@
 
       switch (state) {
         case 0:
-          icon.src = "lights_off.png";  // 🔴 lampu mati
+          icon.src = "/static/lights_off.png";  // 🔴 lampu mati
           break;
         case 1:
-          icon.src = "lights_on.png";   // 🟢 lampu menyala
+          icon.src = "/static/lights_on.png";   // 🟢 lampu menyala
           break;
         case 2:
-          icon.src = "lights_high.png"; // 🔵 lampu jauh (high beam)
+          icon.src = "/static/lights_high.png"; // 🔵 lampu jauh (high beam)
           break;
         default:
           console.warn("⚠️ Invalid headlight state:", state);
@@ -559,12 +559,12 @@
 
     function setLeftIndicator(state) {
       const ind = document.getElementById('leftIndicator');
-      ind.src = state ? "turn_left_on.png" : "turn_left_off.png";
+      ind.src = state ? "/static/turn_left_on.png" : "/static/turn_left_off.png";
     }
 
     function setRightIndicator(state) {
       const ind = document.getElementById('rightIndicator');
-      ind.src = state ? "turn_right_on.png" : "turn_right_off.png";
+      ind.src = state ? "/static/turn_right_on.png" : "/static/turn_right_off.png";
     }
 
     // ✳️ Opsional: buat sein berkedip otomatis
