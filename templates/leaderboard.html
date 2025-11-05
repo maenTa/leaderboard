@@ -383,7 +383,7 @@
   socket.on('penalty_update', (data) => {
     const box = document.getElementById('penaltyBox');
     box.innerHTML = `
-  <img src="static/tes.png" alt="Icon" style="float:left; margin-right:8px; width:30px; height:30px;">
+  <img src="static/engine_damaged.png" alt="Icon" style="float:left; margin-right:8px; width:30px; height:30px;">
   <b>SAMC STEWARDS</b>: ${data.penalty} FOR #${data.driver} - ${data.reason}`;
     box.classList.remove('hidden');
     setTimeout(() => box.classList.add('hidden'), 5000);
