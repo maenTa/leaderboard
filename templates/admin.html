@@ -26,6 +26,20 @@
   <button id="safetyBtn" onclick="toggleSafety()">Safety Car</button>
   <button onclick="sendFlag('red')">Red Flag</button>
   <button onclick="sendFlag('green')">Green Flag</button>
+  
+  <hr>
+  <h3>Session Mode</h3>
+  <button onclick="changeSession('FP1')">FP1</button>
+  <button onclick="changeSession('FP2')">FP2</button>
+  <button onclick="changeSession('FP3')">FP3</button>
+  <button onclick="changeSession('Qualify')">Qualifying</button>
+  <button onclick="changeSession('RACE')">RACE</button>
+
+  <script>
+    function changeSession(mode) {
+      socket.emit('session_change', { session: mode });
+    }
+  </script>
 
   <hr>
   <h3>Penalty</h3>
@@ -34,6 +48,15 @@
     Reason: <input type="text" id="reason"><br>
     Penalty: <input type="text" id="penalty"><br>
     <button type="submit">Send Penalty</button>
+  </form>
+
+  <hr>
+  <h3>RACE CONTROL</h3>
+  <form onsubmit="sendraceControl(event)">
+    Driver1: <input type="text" id="driver1"><br>
+    Reason1: <input type="text" id="reason1"><br>
+    Penalty1: <input type="text" id="penalty1"><br>
+    <button type="submit">Send Race Control</button>
   </form>
 
   <script>
@@ -67,6 +90,16 @@
         penalty: document.getElementById('penalty').value
       };
       socket.emit('penalty', data);
+    }
+
+    function sendraceControl(e) {
+      e.preventDefault();
+      const data = {
+        driver1: document.getElementById('driver1').value,
+        reason1: document.getElementById('reason1').value,
+        penalty1: document.getElementById('penalty1').value
+      };
+      socket.emit('raceControl', data);
     }
   </script>
 </body>

@@ -5,55 +5,99 @@
   <title>Race Leaderboard</title>
   <script src="https://cdn.socket.io/4.6.1/socket.io.min.js"></script>
   <style>
-    * {
-      margin: 0;
-      padding: 0;
-      box-sizing: border-box;
-      font-family: 'Segoe UI', sans-serif;
-    }
+    * { margin: 0; padding: 0; box-sizing: border-box; font-family: 'Segoe UI', sans-serif; }
+
     body {
-    font-family: 'Montserrat', sans-serif;
-    background: transparent;
-    color: white;
-    overflow: visible;
-    -webkit-user-select: none; /* Safari */
-    -moz-user-select: none;    /* Firefox */
-    -ms-user-select: none;     /* Internet Explorer/Edge */
-    user-select: none;         /* Standar modern */
-    
-    } 
+      background: transparent;
+      color: white;
+      overflow: hidden;
+    }
 
-    /* STATUS BANNER */
-    #statusBanner {
-      position: fixed;
-      top: 50px;
-      left: 50%;
-      transform: translateX(-50%);
-      background: rgba(0, 0, 0, 0.7);
+    .hud {
+      position: absolute;
+      top: 20px;
+      left: 20px;
+      width: 350px;
+      background: rgba(0, 0, 0, 0.6);
+      border-radius: 12px;
+      padding: 10px;
+    }
+
+    .logo-row {
       display: flex;
+      justify-content: space-between;
       align-items: center;
-      padding: 12px 25px;
+      margin-bottom: 8px;
+    }
+
+    .logo-row img {
+      height: 75px;
+    }
+
+    .session-label {
+      font-size: 40px;
+      margin-right: 20px;
+      margin-top: 10px;
       font-weight: bold;
-      font-size: 1.2rem;
-      letter-spacing: 1px;
+      font-style: italic;
+      text-align: right;
+      color: #f5f5f5;
+      text-shadow: 0 0 8px rgba(255,255,255,0.4);
+      font-family: 'Montserrat', sans-serif;
+    }
+
+    .lap {
       text-align: center;
-      border-radius: 0;
-      box-shadow: none;
-      transition: opacity 1s ease, background 0.3s ease;
+      font-size: 20px;
+      margin-bottom: 8px;
     }
 
-    #statusLogo {
-      width: 40px;
-      height: 40px;
-      background: rgba(255, 255, 255, 0.1);
-      display: flex;
-      justify-content: center;
-      align-items: center;
-      margin-right: 15px;
+    .flag-box {
+      text-align: center;
+      margin-bottom: 10px;
       border-radius: 8px;
-      font-size: 1.5rem;
+      overflow: hidden;
     }
 
+    .flag-header {
+      font-weight: bold;
+      align-content: center;
+      padding: 5px;
+      height: 50px;
+      font-size: 30px;
+    }
+
+    .flag-sub {
+      font-size: 14px;
+      padding: 4px;
+      background: rgba(0,0,0,0.6);
+    }
+
+    .leaderboard {
+      width: 100%;
+      border-collapse: collapse;
+    }
+
+    .leaderboard th, .leaderboard td {
+      padding: 5px;
+      text-align: center;
+    }
+
+    .leaderboard th {
+      background: rgba(255,255,255,0.1);
+    }
+
+    .leaderboard tr:nth-child(even) {
+      background: rgba(255,255,255,0.05);
+    }
+
+    .team-logo {
+      height: 25px;
+      vertical-align: middle;
+    }
+     .hidden {
+      display: none;
+    }
     /* PENALTY BOX */
     #penaltyBox {
       position: fixed;
@@ -61,7 +105,7 @@
       left: 50%;
       transform: translateX(-50%);
       background: rgba(0, 0, 0, 0.7);
-      border: 2px solid #ff4747;
+      border: 2px solid #43d0dd;
       padding: 15px 25px;
       border-radius: 10px;
       text-align: center;
@@ -70,578 +114,171 @@
       animation: fadeIn 0.3s ease;
     }
 
-    .hidden {
-      display: none;
-    }
-
-    /* COUNTDOWN LIGHTS */
-    #countdown-lights {
+    /* Flag colors */
+    .flag-green .flag-header { background: #00cc00; color: black; }
+    .flag-yellow .flag-header { background: #ffcc00; color: black; }
+    .flag-red .flag-header { background: #cc0000; color: white; }
+    .flag-safety {
       display: flex;
-      justify-content: center;
       align-items: center;
-      margin-top: 100px;
-      gap: 20px;
+      justify-content: center;
+      background: #ffcc00;
+      color: black;
+      font-weight: bold;
+      border-radius: 8px;
+      padding: 10px;
+      gap: 50px;
+      font-size: 25px;
+      font-family: 'Impact', Haettenschweiler, Arial Narrow Bold, sans-serif;
+      margin-bottom: 10px;
     }
 
-    .countdownlight {
-      width: 60px;
-      height: 60px;
-      background-color: #222;
-      border-radius: 50%;
-      box-shadow: inset 0 0 15px #000;
-      transition: background-color 0.3s ease, box-shadow 0.3s ease;
+    .flag-safety img { height: 75px; }
+
+    .flag-formation {
+      background: rgba(255,255,255,0.1);
+      border-radius: 8px;
+      padding: 8px;
+      text-align: center;
+      font-weight: bold;
+      color: #ccc;
     }
-
-    .countdownlight.on {
-      background-color: red;
-      box-shadow: 0 0 20px 5px red;
-    }
-
-    @keyframes fadeIn {
-      from { opacity: 0; transform: translateY(-10px); }
-      to { opacity: 1; transform: translateY(0); }
-    }
-@font-face {
-  font-family: 'Montserrat';
-  src: url('fonts/Montserrat-Regular.ttf') format('truetype');
-  font-weight: normal;
-}
-
-@font-face {
-  font-family: 'Montserrat';
-  src: url('fonts/Montserrat-Bold.ttf') format('truetype');
-  font-weight: bold;
-}
-
-
-* { margin: 0; padding: 0; box-sizing: border-box; }
-:root {
-    --cyber-white: #ff0033;
-    --cyber-green: #00ff6a;
-    --cyber-orange: #ffaa00;
-    --cyber-red: #ff0033;
-  }
-
- .rpm {
-  position: absolute;
-  right: 30px;
-  bottom: 30px;
-  font-size: 36px;
-  letter-spacing: 2px;
-}
-.speed {
-  position: absolute;
-  left: 125px;
-  bottom: 30px;
-  font-size: 36px;
-  letter-spacing: 2px;
-}
-.indicator-left{
-  position: absolute;
-  right: 70px;
-  bottom: 12px;
-  font-size: 12px;
-  letter-spacing: 2px;
-}
-.indicator-right{
-  position: absolute;
-  right: 45px;
-  bottom: 12px;
-  font-size: 12px;
-  letter-spacing: 2px;
-}
-.fuel-value {
-  position: absolute;
-  left: 225px;
-  bottom: 16px;
-  font-size: 12px;
-  letter-spacing: 2px;
-}
-.health-value {
-  position: absolute;
-  left: 162px;
-  bottom: 16px;
-  font-size: 12px;
-  letter-spacing: 2px;
-}
-.lamp {
-  position: absolute;
-  left: 260px;
-  bottom: 11px;
-  font-size: 12px;
-  letter-spacing: 2px;
-}
-.seat {
-  position: absolute;
-  left: 290px;
-  bottom: 12px;
-  font-size: 12px;
-  letter-spacing: 2px;
-}
-.engine {
-  position: absolute;
-  left: 140px;
-  bottom: 11px;
-  font-size: 12px;
-  letter-spacing: 2px;
-}
-.fuel {
-  position: absolute;
-  left: 200px;
-  bottom: 11px;
-  font-size: 12px;
-  letter-spacing: 2px;
-}
-  /* Lingkaran RPM */
-  .rpm-circle {
-    position:absolute;
-    left: 0px;
-    top: 0px;
-    width: 100px;
-    height: 100px;
-    border-radius: 50%;
-    background: conic-gradient(var(--cyber-green) 90deg, #222 90deg);
-    display: flex;
-    align-items: center;
-    justify-content: center;
-    transition: background 0.15s ease-out;
-    box-shadow: 0 0 20px rgba(0,255,100,0.1);
-  }
-
-  /* Ring tipis agar lebih elegan */
-  .rpm-ring {
-    position: absolute;
-    width: 100px;
-    height: 100px;
-    border-radius: 50%;
-  }
-
-  .circle-center {
-    position: absolute;
-    top: 5px;
-    bottom: 22px;
-    width: 90px;
-    height: 90px;
-    background: #000;
-    border-radius: 50%;
-    border: 2px solid var(--cyber-white);
-    display: flex;
-    align-items: center;
-    justify-content: center;
-    font-size: 36px;
-    box-shadow: inset 0 0 15px rgba(0,255,255,0.3);
-  }
-
-  .rpm-lights {
-    top: 15px;
-    right: 30px;
-    position: absolute;
-    display: flex;
-    gap: 5px;
-  }
-
-  .light {
-    top: 0px;
-    width: 10px;
-    height: 10px;
-    border-radius: 50%;
-    background: #111;
-    box-shadow: 0 0 4px #000;
-    transition: background 0.25s ease, box-shadow 0.25s ease;
-  }
-
-  .light.active {
-    top: 0px;
-    background: var(--cyber-green);
-    box-shadow: 0 0 10px var(--cyber-green);
-  }
-
-  .light.orange {
-    top: 0px;
-    background: var(--cyber-orange);
-    box-shadow: 0 0 10px var(--cyber-orange);
-  }
-
-  .light.red {
-    top: 0px;
-    background: var(--cyber-red);
-    box-shadow: 0 0 12px var(--cyber-red);
-  }
-
-  .rpm-label {
-    position: absolute;
-    top: 35px;
-    right: 80px;
-    font-size: 1.1rem;
-    opacity: 0.8;
-  }
-   .speed-label {
-    position: absolute;
-    top: 35px;
-    left: 125px;
-    font-size: 1.1rem;
-    opacity: 0.8;
-  }
-
-  .gauges-container {
-    position: center;
-    right: 720px;   /* jarak dari sisi kanan */
-    bottom: 50px;  /* jarak dari sisi bawah */
-    height: 400px;
-    width: 600px;
-
-}
-
-  .box {
-    background: url(https://i.imgur.com/UvmmCQd.png);
-    background-size: 400px;
-    width: 400px;
-    height: 120px;
-    background-repeat: no-repeat;
-    position: fixed;
-    right: 750px;   /* jarak dari sisi kanan */
-    bottom: 15px;  /* jarak dari sisi bawah */
-    overflow: visible;
-}
-    
-    
   </style>
 </head>
-
 <body>
-
-  <div class="gauges-container">
-    <div class="box">
-        <div class="rpm-circle" id="rpmCircle">
-                <div class="rpm-ring"></div>
-                <div class="circle-center" id="gearDisplay">3</div>
-        </div>
-        <div class="rpm" id="rpm-value">0000</div>
-        <div class="speed" id="speedValue">0000</div>
-        <div class="rpm-lights" id="rpmLights"></div>
-        <div class="rpm-label">RPM</div>
-        <div class="speed-label">SPEED</div>
-        <div class="fuel"><img id="fuelIcon" src="/static/fuel_full.png" alt="Fuel Icon" width="18"></div>
-        <div class="fuel-value" id="fuelValue">0%</div>
-        <div class="engine"><img id="engineIcon" src="/static/engine_off.png" alt="Engine Icon" width="20"></div>
-        <div class="health-value" id="healthValue">0%</div>
-        <div class="lamp"><img id="lightsIcon" src="/static/lights_off.png" alt="Headlights Icon" width="20"></div>
-        <div class="seat"><img id="seatbeltIcon" src="/static/seatbelt_off.png" alt="Seatbelt Icon" width="18"></div>
-        <div class="indicator-left">
-        <img id="leftIndicator" src="/static/turn_left_off.png" alt="Left Indicator" width="18">
-        </div>
-        <div class="indicator-right">
-        <img id="rightIndicator" src="/static/turn_right_off.png" alt="Right Indicator" width="18">
-        </div>
-
-
-        
+  <div class="hud">
+    <div class="logo-row">
+      <img src="/static/logo_samc.png" alt="SAMC">
+      <div class="session-label" id="sessionLabel">RACE</div>
     </div>
-</div>
-  <div id="statusBanner">
-    <div id="statusLogo">⏱</div>
-    <div id="statusText">Waiting for start...</div>
+    <div id="penaltyBox" class="hidden"></div>
+    <div class="lap" id="lapDisplay">Lap 1/58</div>
+
+    <!-- FLAG AREA -->
+    <div id="flagBox"></div>
+
+    <!-- LEADERBOARD -->
+    <table class="leaderboard" id="leaderboardTable">
+      <thead>
+        <tr>
+          <th>Pos</th>
+          <th></th>
+          <th>Driver</th>
+          <th>Gap</th>
+        </tr>
+      </thead>
+      <tbody>
+        <tr><td>1</td><td><img src="/static/sonnard.png" class="team-logo"></td><td>LEC</td><td>Leader</td></tr>
+        <tr><td>2</td><td><img src="/static/harmony.png" class="team-logo"></td><td>VER</td><td>+1.239</td></tr>
+        <tr><td>3</td><td><img src="/static/agro.png" class="team-logo"></td><td>NOR</td><td>+2.502</td></tr>
+      </tbody>
+    </table>
   </div>
 
-  <div id="penaltyBox" class="hidden"></div>
-  <div id="countdown-lights"></div>
-
   <script>
-  const socket = io();
-  let lightsOn = false;
-  let bannerTimeout = null;
+    const socket = io();
+    const flagBox = document.getElementById('flagBox');
+    const lapDisplay = document.getElementById('lapDisplay');
+    const leaderboardTable = document.getElementById('leaderboardTable').querySelector('tbody');
+    const sessionLabel = document.getElementById('sessionLabel');
 
-  socket.on('lights_start', () => {
-    startLightAnimation();
-    lightsOn = true;
-  });
-
-  socket.on('race_started', () => {
-    lightsOn = false;
-    document.getElementById('countdown-lights').innerHTML = "";
-    updateBanner("🏁", "Race Started!", true);
-  });
-
-  socket.on('formation_lap', () => {
-    updateBanner("🏎️", "Formation Lap in Progress", false);
-  });
-
-  socket.on('flag_update', (data) => {
-    const type = data.type;
-    if (type === 'yellow')
-      updateBanner("⚠️", `Yellow Flag Sector ${data.sector || ''}<br><span style="font-size:12px;">TRACK HAZARD</span>`);
-    else if (type === 'safety')
-      updateBanner("🚗", "Safety Car Deployed");
-    else if (type === 'safety_end')
-      updateBanner("🟢", `SAFETY CAR IN THIS LAP<br><span style="font-size:12px;">MAINTAIN SPEED</span>`, false);
-    else if (type === 'red')
-      updateBanner("🔴", "Red Flag");
-    else if (type === 'green')
-      updateBanner("🟢", "Green Flag - Race Resumed", true);
-  });
-
-  socket.on('penalty_update', (data) => {
+    // ========== FLAG EVENTS ==========
+    socket.on('penalty_update', (data) => {
     const box = document.getElementById('penaltyBox');
     box.innerHTML = `
-  <img src="static/engine_damaged.png" alt="Icon" style="float:left; margin-right:8px; width:30px; height:30px;">
+  <img src="static/SAMF.png" alt="Icon" style="float:left; margin-right:8px; width:100px; height:100px;">
   <b>SAMC STEWARDS</b>: ${data.penalty} FOR #${data.driver} - ${data.reason}`;
+    box.classList.remove('hidden');
+    setTimeout(() => box.classList.add('hidden'), 7500);
+  });
+
+  socket.on('raceControl_update', (data) => {
+    const box = document.getElementById('penaltyBox');
+    box.innerHTML = `
+  <img src="static/SAMF.png" alt="Icon" style="float:left; margin-right:8px; width:100px; height:100px;">
+  <b>RACE CONTROL</b>: ${data.driver1} INCIDENT - ${data.reason1} -  ${data.penalty1}`;
     box.classList.remove('hidden');
     setTimeout(() => box.classList.add('hidden'), 5000);
   });
 
-  function updateBanner(emoji, text, autoHide = false) {
-    const banner = document.getElementById('statusBanner');
-    const logo = document.getElementById('statusLogo');
-    const statusText = document.getElementById('statusText');
+    socket.on('flag_update', (data) => {
+      const type = data.type;
+      flagBox.innerHTML = '';
 
-    logo.textContent = emoji;
-    statusText.innerHTML = text;
-    banner.style.opacity = "1";
-
-    if (bannerTimeout) clearTimeout(bannerTimeout);
-    if (autoHide) {
-      bannerTimeout = setTimeout(() => {
-        banner.style.transition = "opacity 1s ease";
-        banner.style.opacity = "0";
-      }, 5000);
-    } else {
-      banner.style.opacity = "1";
-    }
-  }
-
-    function startLightAnimation() {
-      const lights = document.getElementById('countdown-lights');
-      lights.innerHTML = '';
-      for (let i = 0; i < 5; i++) {
-        const light = document.createElement('div');
-        light.className = 'countdownlight'; // ✅ pakai class yang benar
-        lights.appendChild(light);
-        setTimeout(() => light.classList.add('on'), i * 600);
+      if (type === 'green') {
+        flagBox.innerHTML = `
+          <div class="flag-box flag-green">
+            <div class="flag-header">GREEN FLAG</div>
+            <div class="flag-sub">TRACK CLEAR</div>
+          </div>`;
+        // Menghilangkan banner setelah 3 detik
+        setTimeout(() => { flagBox.innerHTML = ''; }, 3000);
       }
-      updateBanner("🔴", "Starting Sequence...");
-    }
-    function convertSpeed(speedMS, mode) {
-      switch (mode) {
-        case 0: return Math.round(speedMS * 3.6);
-        case 1: return Math.round(speedMS * 2.237);
-        case 2: return Math.round(speedMS * 1.944);
-        default: return Math.round(speedMS * 3.6);
+
+      else if (type === 'yellow') {
+        const sector = data.sector ? `SECTOR ${data.sector} - ` : '';
+        flagBox.innerHTML = `
+          <div class="flag-box flag-yellow">
+            <div class="flag-header">YELLOW FLAG</div>
+            <div class="flag-sub">${sector}TRACK HAZARD</div>
+          </div>`;
       }
-    }
-    function setSpeed(speed) {
-      document.getElementById("speedValue").innerHTML = 
-        `${Math.round(speed * 2.23)} <span style="font-size:12px;">MPH</span>`;
-      const converted = convertSpeed(speed, currentSpeedMode);
-    }
-    const rpmValueEl = document.getElementById('rpm-value');
-    const rpmCircleEl = document.getElementById('rpmCircle');
-    const rpmLightsContainer = document.getElementById('rpmLights');
 
-    const LIGHT_COUNT = 18;
-    const RPM_DANGER_THRESHOLD = 0.85;
-
-    for (let i = 0; i < LIGHT_COUNT; i++) {
-      const light = document.createElement('div');
-      light.classList.add('light');
-      rpmLightsContainer.appendChild(light);
-    }
-    const lights = Array.from(document.querySelectorAll('.light'));
-
-    let displayedRPM = 0;
-    let targetRPM = 0;
-    let idleInterval = null;
-
-    function setRPM(rpm) {
-      // Hentikan fluktuasi lama
-      if (idleInterval) clearInterval(idleInterval);
-
-      // Jika idle (sekitar 0.2)
-      if (rpm <= 0.21 && rpm >= 0.19) {
-        targetRPM = 0.2;
-        
-        // Jalankan fluktuasi ringan otomatis
-        idleInterval = setInterval(() => {
-          const variation = (Math.random() * 0.1 - 0.05) * 0.2; // variasi kecil ±0.01
-          targetRPM = 0.2 + variation;
-        }, 300);
-      } else {
-        // RPM normal tanpa fluktuasi
-        targetRPM = Math.max(0, Math.min(1, rpm));
+      else if (type === 'red') {
+        flagBox.innerHTML = `
+          <div class="flag-box flag-red">
+            <div class="flag-header">RED FLAG</div>
+            <div class="flag-sub">SESSION SUSPENDED</div>
+          </div>`;
       }
-    }
 
-    function setGear(gear, speed) {
-      const g = document.getElementById('gearDisplay');
-
-      if (speed <= 1) {                   // <= 1 km/h dianggap berhenti
-        g.textContent = 'N';              // Netral
-      } else if (gear === 0 || gear < 0) {
-        g.textContent = 'R';              // Mundur
-      } else {
-        g.textContent = gear.toString();  // Gigi normal
+      else if (type === 'safety') {
+        flagBox.innerHTML = `
+          <div class="flag-safety">
+            <img src="/static/SAMFB.png" alt="SC">
+            <span>SAFETY<br>CAR</span>
+          </div>`;
       }
-    }
-    function setSeatbelts(state) {
-      const icon = document.getElementById('seatbeltIcon');
-      icon.src = state ? "/static/seatbelt_on.png" : "/static/seatbelt_off.png";
-    }
 
-    let currentFuel = 0; // nilai 0.0–1.0
-
-    function setFuel(fuel) {
-      currentFuel = fuel;
-      const percent = Math.round(fuel * 100);
-      const fuelText = document.getElementById('fuelValue');
-      const fuelIcon = document.getElementById('fuelIcon');
-
-      fuelText.textContent = `${percent}%`;
-
-      // Ganti tampilan berdasarkan level bahan bakar
-      if (fuel <= 0) {
-        fuelIcon.src = "/static/fuel_empty.png"; // kosong / mati
-        fuelText.style.color = "#888";   // abu-abu
-      } else if (fuel < 0.2) {
-        fuelIcon.src = "/static/fuel_low.png";   // low fuel merah
-        fuelText.style.color = "#f33";   // merah
-      } else {
-        fuelIcon.src = "/static/fuel_full.png";  // normal hijau
-        fuelText.style.color = "#0f0";   // hijau
+      else if (type === 'safety_end') {
+        flagBox.innerHTML = `
+          <div class="flag-safety">
+            <img src="/static/SAMFB.png" alt="SC">
+            <span>SAFETY<br>CAR<br>ENDING</span>
+          </div>`;
       }
-    }
+    });
 
-    let engineOn = false;
-    let currentHealth = 0; // nilai antara 0.0 - 1.0
+    // ========== FORMATION LAP ==========
+    socket.on('formation_lap', () => {
+      flagBox.innerHTML = `
+        <div class="flag-formation">FORMATION LAP</div><br>
+      `;
+    });
 
-    function setEngine(state) {
-      engineOn = state;
-      updateEngineStatus();
-    }
+    // ========== LAP UPDATE ==========
+    socket.on('lap_update', (data) => {
+      lapDisplay.textContent = `Lap ${data.current}/${data.total}`;
+    });
 
-    function setHealth(health) {
-      currentHealth = health;
-      const percent = Math.round(health * 100);
-      document.getElementById('healthValue').textContent = `${percent}%`;
-      updateEngineStatus();
-    }
+    // ========== SESSION UPDATE ==========
+    socket.on('session_update', (data) => {
+      sessionLabel.textContent = data.session;
+    });
 
-    function updateEngineStatus() {
-      const icon = document.getElementById('engineIcon');
-      const healthText = document.getElementById('healthValue');
-
-      if (!engineOn) {
-        icon.src = "/static/engine_off.png";        // 🔴 mesin mati
-        healthText.style.color = "#aaa";    // warna netral
-      } else if (currentHealth < 0.5) {
-        icon.src = "/static/engine_damaged.png";    // ⚠️ rusak
-        healthText.style.color = "#f90";    // oranye / peringatan
-      } else {
-        icon.src = "/static/engine_on.png";         // 🟢 normal
-        healthText.style.color = "#0f0";    // hijau
-      }
-    }
-    function setHeadlights(state) {
-      const icon = document.getElementById('lightsIcon');
-
-      switch (state) {
-        case 0:
-          icon.src = "/static/lights_off.png";  // 🔴 lampu mati
-          break;
-        case 1:
-          icon.src = "/static/lights_on.png";   // 🟢 lampu menyala
-          break;
-        case 2:
-          icon.src = "/static/lights_high.png"; // 🔵 lampu jauh (high beam)
-          break;
-        default:
-          console.warn("⚠️ Invalid headlight state:", state);
-          break;
-      }
-    }
-    let leftBlinkInterval, rightBlinkInterval;
-
-    function setLeftIndicator(state) {
-      const ind = document.getElementById('leftIndicator');
-      ind.src = state ? "/static/turn_left_on.png" : "/static/turn_left_off.png";
-    }
-
-    function setRightIndicator(state) {
-      const ind = document.getElementById('rightIndicator');
-      ind.src = state ? "/static/turn_right_on.png" : "/static/turn_right_off.png";
-    }
-
-    // ✳️ Opsional: buat sein berkedip otomatis
-    function blinkLeft(state) {
-      clearInterval(leftBlinkInterval);
-      if (state) {
-        let on = false;
-        leftBlinkInterval = setInterval(() => {
-          on = !on;
-          setLeftIndicator(on);
-        }, 500);
-      } else {
-        setLeftIndicator(false);
-      }
-    }
-
-    function blinkRight(state) {
-      clearInterval(rightBlinkInterval);
-      if (state) {
-        let on = false;
-        rightBlinkInterval = setInterval(() => {
-          on = !on;
-          setRightIndicator(on);
-        }, 500);
-      } else {
-        setRightIndicator(false);
-      }
-    }
-
-    function animateRPM() {
-      // Interpolasi smooth (lerp)
-      displayedRPM += (targetRPM - displayedRPM) * 0.1;
-
-      const rpm = displayedRPM;
-      const rpmValue = Math.round(rpm * 8000);
-      rpmValueEl.textContent = rpmValue.toString().padStart(4, '0');
-
-      const degrees = rpm * 360;
-      let color = 'var(--cyber-green)';
-      if (rpm >= RPM_DANGER_THRESHOLD) color = 'var(--cyber-red)';
-      else if (rpm >= 0.6) color = 'var(--cyber-orange)';
-
-      rpmCircleEl.style.background = `
-      conic-gradient(
-        from 90deg,
-        ${color} ${degrees}deg,
-        #222 ${degrees}deg
-      )
-    `;
-
-      // Update lampu horizontal
-      const activeLights = Math.round(rpm * LIGHT_COUNT);
-      lights.forEach((light, i) => {
-        light.classList.remove('active', 'orange', 'red');
-        if (i < activeLights) {
-          if (rpm >= RPM_DANGER_THRESHOLD && i >= LIGHT_COUNT - 5) {
-            light.classList.add('red');
-          } else if (rpm >= 0.5 && i >= LIGHT_COUNT - 10) {
-            light.classList.add('orange');
-          } else {
-            light.classList.add('active');
-          }
-        }
+    // ========== LEADERBOARD ==========
+    socket.on('leaderboard_update', (data) => {
+      leaderboardTable.innerHTML = '';
+      data.forEach(row => {
+        leaderboardTable.innerHTML += `
+          <tr>
+            <td>${row.pos}</td>
+            <td><img src="${row.team_logo}" class="team-logo"></td>
+            <td>${row.name}</td>
+            <td>${row.gap}</td>
+          </tr>`;
       });
-
-      requestAnimationFrame(animateRPM);
-    }
-
-    animateRPM();
-    setRPM(0)
-setSpeed(0)
-setGear("N")
-setHealth(1)
-setFuel(20)
+    });
   </script>
-
 </body>
 </html>
