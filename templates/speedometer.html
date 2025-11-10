@@ -16,6 +16,8 @@
     background: transparent;
     color: white;
     overflow: visible;
+    width: auto;
+    height: 100vh;
     -webkit-user-select: none; /* Safari */
     -moz-user-select: none;    /* Firefox */
     -ms-user-select: none;     /* Internet Explorer/Edge */
@@ -26,7 +28,7 @@
     /* STATUS BANNER */
     #statusBanner {
       position: fixed;
-      top: 50px;
+      top: 75px;
       left: 50%;
       transform: translateX(-50%);
       background: rgba(0, 0, 0, 0.7);
@@ -97,8 +99,10 @@
       display: flex;
       justify-content: center;
       align-items: center;
-      margin-top: 100px;
       gap: 20px;
+      position: absolute;
+      width: 100%;
+      height: 100%;
     }
 
     .countdownlight {
@@ -302,11 +306,13 @@
   }
 
   .gauges-container {
-    position: center;
-    right: 720px;   /* jarak dari sisi kanan */
-    bottom: 50px;  /* jarak dari sisi bawah */
-    height: 400px;
-    width: 600px;
+    display: flex;
+    justify-content: center;
+    height: 100vh;
+    width: auto;
+    bottom: 10px;
+    place-content: center;
+    position: relative;
 
 }
 
@@ -316,10 +322,11 @@
     width: 400px;
     height: 120px;
     background-repeat: no-repeat;
-    position: fixed;
-    right: 750px;   /* jarak dari sisi kanan */
+    position: absolute;
+    justify-content: center;
     bottom: 15px;  /* jarak dari sisi bawah */
     overflow: visible;
+    display: flex;
 }
     
     
@@ -327,7 +334,18 @@
 </head>
 
 <body>
+  <div id="statusBanner">
+    <div id="image"></div>
+    <div id="statusLogo">⏱</div>
+    <div id="statusText">Waiting for start...</div>
+    <br>
+    
+  
+  </div>
+  <div id="countdown-lights"></div>
+  <div id="penaltyBox" class="hidden"></div>
 
+  
   <div class="gauges-container">
     <div class="box">
         <div class="rpm-circle" id="rpmCircle">
@@ -356,14 +374,7 @@
         
     </div>
 </div>
-  <div id="statusBanner">
-    <div id="image"></div>
-    <div id="statusLogo">⏱</div>
-    <div id="statusText">Waiting for start...</div>
-  </div>
 
-  <div id="penaltyBox" class="hidden"></div>
-  <div id="countdown-lights"></div>
 
   <script>
   const socket = io();
@@ -401,7 +412,7 @@
   }
 
   else if (type === 'red') {
-    updateBanner("", "🔴", "Red Flag");
+    updateBanner("", "🔴", `Red Flag <br><span style="font-size:12px;">ALL CARS RETURN TO PIT</span>`);
   }
 
   else if (type === 'green') {

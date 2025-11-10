@@ -4,7 +4,12 @@
   <title>Race Control Panel</title>
   <script src="https://cdn.socket.io/4.6.1/socket.io.min.js"></script>
   <style>
-    body { font-family: Segoe UI, sans-serif; background: #111; color: white; padding: 20px; }
+    body { font-family: Segoe UI, sans-serif; background: #111; color: white; padding: 20px; 
+    -webkit-user-select: none; /* Safari */
+    -moz-user-select: none;    /* Firefox */
+    -ms-user-select: none;     /* Internet Explorer/Edge */
+    user-select: none;         /* Standar modern */
+    }
     button {
       margin: 5px; padding: 10px 15px; border: none; border-radius: 8px;
       background: #444; color: white; cursor: pointer; transition: 0.2s;
@@ -14,6 +19,26 @@
   </style>
 </head>
 <body>
+  <!-- PASSWORD MODAL -->
+<div id="passwordModal" style="
+  position: fixed; top: 0; left: 0; width: 100%; height: 100%;
+  background: rgba(0,0,0,0.85); display: flex; align-items: center; justify-content: center;
+  z-index: 9999;
+">
+  <div style="background: #222; padding: 30px; border-radius: 10px; text-align: center; width: 300px;">
+    <h3>🔒 Enter Admin Password</h3>
+    <input type="password" id="passwordInput" placeholder="Password" style="
+      width: 90%; padding: 10px; margin-top: 15px; border-radius: 5px; border: none; outline: none;
+    ">
+    <br>
+    <button onclick="checkPassword()" style="
+      margin-top: 15px; padding: 10px 20px; border: none; border-radius: 5px;
+      background: #e0a800; color: black; font-weight: bold; cursor: pointer;
+    ">Login</button>
+    <p id="errorMsg" style="color: #ff6666; margin-top: 10px; display: none;">Wrong password!</p>
+  </div>
+</div>
+
   <h2>🏁 Race Control Panel</h2>
   <button onclick="socket.emit('start_formation_lap')">Formation Lap</button>
   <button onclick="startLights()">Start Lights</button>
@@ -101,6 +126,28 @@
       };
       socket.emit('raceControl', data);
     }
+  
+    async function checkPassword() {
+      const password = document.getElementById('passwordInput').value;
+
+      const response = await fetch('/verify-password', {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify({ password })
+      });
+
+      const result = await response.json();
+
+      if (result.success) {
+        document.getElementById('passwordModal').style.display = 'none';
+      } else {
+        const err = document.getElementById('errorMsg');
+        err.style.display = 'block';
+        err.textContent = '❌ Password salah!';
+      }
+    }
+
+
   </script>
 </body>
 </html>

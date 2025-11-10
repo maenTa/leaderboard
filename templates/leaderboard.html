@@ -11,6 +11,11 @@
       background: transparent;
       color: white;
       overflow: hidden;
+      -webkit-user-select: none; /* Safari */
+      -moz-user-select: none;    /* Firefox */
+      -ms-user-select: none;     /* Internet Explorer/Edge */
+      user-select: none;         /* Standar modern */
+    
     }
 
     .hud {
@@ -143,9 +148,42 @@
       font-weight: bold;
       color: #ccc;
     }
+     #statusBanner {
+      position: fixed;
+      top: 75px;
+      left: 50%;
+      transform: translateX(-50%);
+      background: rgba(0, 0, 0, 0.7);
+      display: flex;
+      align-items: center;
+      padding: 12px 25px;
+      font-weight: bold;
+      font-size: 1.2rem;
+      letter-spacing: 1px;
+      text-align: center;
+      border-radius: 0;
+      box-shadow: none;
+      transition: opacity 1s ease, background 0.3s ease;
+    }
+        #statusLogo {
+      width: 40px;
+      height: 40px;
+      background: rgba(255, 255, 255, 0.1);
+      display: flex;
+      justify-content: center;
+      align-items: center;
+      margin-right: 15px;
+      border-radius: 8px;
+      font-size: 1.5rem;
+    }
   </style>
 </head>
 <body>
+    <div id="statusBanner">
+      <div id="image"></div>
+      <div id="statusLogo">⏱</div>
+    <div id="statusText">Waiting for start...</div>
+  </div>
   <div class="hud">
     <div class="logo-row">
       <img src="/static/logo_samc.png" alt="SAMC">
@@ -201,6 +239,41 @@
     setTimeout(() => box.classList.add('hidden'), 5000);
   });
 
+
+
+    // ========== FORMATION LAP ==========
+    socket.on('formation_lap', () => {
+      flagBox.innerHTML = `
+        <div class="flag-formation">FORMATION LAP</div><br>
+      `;
+    });
+
+    let bannerTimeout = null;
+    function updateBanner(img, emoji, text, autoHide = false) {
+    const image = document.getElementById('image');
+    const banner = document.getElementById('statusBanner');
+    const logo = document.getElementById('statusLogo');
+    const statusText = document.getElementById('statusText');
+
+    image.innerHTML = img;
+    logo.textContent = emoji;
+    statusText.innerHTML = text;
+    banner.style.opacity = "1";
+
+    if (bannerTimeout) clearTimeout(bannerTimeout);
+    if (autoHide) {
+      bannerTimeout = setTimeout(() => {
+        banner.style.transition = "opacity 1s ease";
+        banner.style.opacity = "0";
+      }, 5000);
+    } else {
+      banner.style.opacity = "1";
+    }
+  }
+    socket.on('formation_lap', () => {
+    updateBanner("","🏎️", "Formation Lap", false);
+  });
+
     socket.on('flag_update', (data) => {
       const type = data.type;
       flagBox.innerHTML = '';
@@ -211,8 +284,9 @@
             <div class="flag-header">GREEN FLAG</div>
             <div class="flag-sub">TRACK CLEAR</div>
           </div>`;
-        // Menghilangkan banner setelah 3 detik
-        setTimeout(() => { flagBox.innerHTML = ''; }, 3000);
+          setTimeout(() => { flagBox.innerHTML = ''; }, 3000);
+        // Menghilangkan banner setelah 3 detik 
+        updateBanner("","🟢", "Green Flag - Track Clear", true);
       }
 
       else if (type === 'yellow') {
@@ -247,13 +321,6 @@
             <span>SAFETY<br>CAR<br>ENDING</span>
           </div>`;
       }
-    });
-
-    // ========== FORMATION LAP ==========
-    socket.on('formation_lap', () => {
-      flagBox.innerHTML = `
-        <div class="flag-formation">FORMATION LAP</div><br>
-      `;
     });
 
     // ========== LAP UPDATE ==========

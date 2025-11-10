@@ -1,7 +1,10 @@
 from flask import Flask, render_template
 from flask_socketio import SocketIO, emit # type: ignore
+from flask import Flask, render_template, request, jsonify
 
 app = Flask(__name__)
+
+ADMIN_PASSWORD = "dimiecantik"
 app.config['SECRET_KEY'] = 'race_secret'
 socketio = SocketIO(app)
 
@@ -12,6 +15,13 @@ race_state = {
     "raceControl": [],
     "safety_active": False
 }
+
+@app.route('/verify-password', methods=['POST'])
+def verify_password():
+    data = request.get_json()
+    if data.get('password') == ADMIN_PASSWORD:
+        return jsonify({"success": True})
+    return jsonify({"success": False})
 
 @app.route('/leaderboard')
 def leaderboard():
